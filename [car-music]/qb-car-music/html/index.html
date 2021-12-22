@@ -1,0 +1,53 @@
+<html>
+<header>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="main.css">
+</header>
+
+<body id="main">
+    <div>
+        <div id="screen">
+            <div id="title">Car Stereo</div>
+			<div id="MyClockDisplay" class="clock" onload="showTime()"></div>
+			<div id="testrecv"><b>Volume:</b> 10%</div>
+			<div id="testrecl"><b>Looping:</b> False</div>
+			<hr class="new1">S
+            <div id="bttrec">
+                <div class="bttn">
+                    <img src="play.svg" class="fw" id="play"></img>
+                </div>
+				<div class="bttn">
+                    <img src="loop.svg" class="fw" id="loop"></img>
+                </div>
+                <div class="bttn">
+                    <img src="pause.svg" class="fw" id="pause"></img>
+                </div>
+            </div>
+			<div id="downrec">
+                <div class="bttn">
+                    <img src="back.svg" class="fw" id="back"></img>
+                </div>
+                <div class="bttn">
+                    <img src="forward.svg" class="fw" id="forward"></img>
+                </div>
+            </div>
+			<div id="testrec"><b>Playing:</b></div>
+			<div id="testtime"></div>
+            <div id="inputrec">
+                <input placeholder="Link to the music" id="linkinput"></input>
+                <button id="inputok">PLAY</button>
+            </div>
+        </div>
+        <button id="shutdownbutton"></button>
+        <button id="volumeup"></button>
+        <button id="volumedown"></button>
+
+        <img src="radio.png" id="image"></img>
+    </div>
+</body>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js" type="text/javascript"></script>
+<script src="script.js" type="text/javascript"></script>
+
+</html>
