@@ -1,4 +1,4 @@
-# QBUS Car Music/Radio
+# QBCore Car Music/Radio
 ### Previews : [Youtube](https://youtu.be/0efPWbqq8Go)
 
 ### My Discord Server - [DISCORD](https://discord.gg/jSDMuNjpuw)
