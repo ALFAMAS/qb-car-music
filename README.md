@@ -1,4 +1,4 @@
-# QBCore Car Music/Radio
+# [No Longer Maintained] QBCore Car Music/Radio
 ### Previews : [Youtube](https://youtu.be/0efPWbqq8Go)
 
 ### My Discord Server - [DISCORD](https://discord.gg/jSDMuNjpuw)
