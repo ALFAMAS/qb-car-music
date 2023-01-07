@@ -6,7 +6,7 @@
 
 ### Credits to Xsound - [Xsound](https://github.com/Xogy/xsound)
 
-### Use Command - /music  | to use the script in game.
+# Use Command | /music  | to use the script in game.
 
 ### SETUP 
 - Add these 1 lines your to `Server.cfg` or `Resources.cfg`.
