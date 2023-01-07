@@ -29,8 +29,7 @@ function isReady(divId, howler){
 
                 var time = 0;
                 if(sound.getAudioPlayer() != null){time = sound.getAudioPlayer()._duration;}
-			    if(sound.isDynamic()) sound.setVolume(0);
-			    if(!sound.isDynamic()) sound.setVolume(sound.getVolume());
+                if(sound.isDynamic()) sound.setVolume(0);
 
                 $.post('https://xsound/data_status', JSON.stringify(
                 {
@@ -38,9 +37,6 @@ function isReady(divId, howler){
                     type: "maxDuration",
                     id: sound.getName(),
                 }));
-		    
-		        addToCache();
-		        updateVolumeSounds();
                 break;
             }
         }
@@ -69,11 +65,7 @@ function isReady(divId, howler){
             }));
 
             sound.isYoutubeReady(true);
-
-	        addToCache();
-	        updateVolumeSounds();
-
-            if(!sound.isDynamic()) sound.setVolume(sound.getVolume());
+            if(!sound.isDynamic()) sound.setVolume(sound.getVolume())
             break;
         }
 	}

@@ -2,7 +2,6 @@
 -- when ever is this library.. so please keep this command name on "streamermode" command
 RegisterCommand("streamermode", function(source, args, rawCommand)
     disableMusic = not disableMusic
-    TriggerEvent("xsound:streamerMode", disableMusic)
     if disableMusic then
         TriggerEvent('chat:addMessage', { args = { "^1[xSound]", config.Messages["streamer_on"] } })
 

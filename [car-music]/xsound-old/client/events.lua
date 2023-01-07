@@ -1,10 +1,3 @@
-RegisterNUICallback("init", function()
-    SendNUIMessage({
-        status = "init",
-        time = config.RefreshTime,
-    })
-end)
-
 RegisterNUICallback("data_status", function(data)
     if soundInfo[data.id] ~= nil then
         if data.type == "finished" then
@@ -14,12 +7,8 @@ RegisterNUICallback("data_status", function(data)
             TriggerEvent("xSound:songStopPlaying", data.id)
         end
         if data.type == "maxDuration" then
-            if not soundInfo[data.id].SkipTimeStamp then
-                soundInfo[data.id].timeStamp = 0
-            end
+            soundInfo[data.id].timeStamp = 0
             soundInfo[data.id].maxDuration = data.time
-
-            soundInfo[data.id].SkipTimeStamp = nil
         end
     end
 end)
@@ -35,43 +24,30 @@ RegisterNUICallback("events", function(data)
         end
     end
     if type == "onPlay" then
-        if globalOptionsCache[id] then
-            if globalOptionsCache[id].onPlayStartSilent then
-                globalOptionsCache[id].onPlayStartSilent(getInfo(id))
-            end
-
-            if globalOptionsCache[id].onPlayStart and not soundInfo[id].SkipEvents then
-                globalOptionsCache[id].onPlayStart(getInfo(id))
-            end
-
-            soundInfo[id].SkipEvents = nil
+        if globalOptionsCache[id] ~= nil and globalOptionsCache[id].onPlayStart ~= nil then
+            globalOptionsCache[id].onPlayStart(getInfo(id))
         end
     end
     if type == "onEnd" then
-        if globalOptionsCache[id] then
-            if globalOptionsCache[id].onPlayEnd then
-                globalOptionsCache[id].onPlayEnd(getInfo(id))
-            end
+        if globalOptionsCache[id] ~= nil and globalOptionsCache[id].onPlayEnd ~= nil then
+            globalOptionsCache[id].onPlayEnd(getInfo(id))
         end
-        if soundInfo[id] then
-            if soundInfo[id].loop then
-                soundInfo[id].timeStamp = 0
-            end
-            if soundInfo[id].destroyOnFinish and not soundInfo[id].loop then
-                Destroy(id)
-            end
+        if soundInfo[id].loop then
+            soundInfo[id].timeStamp = 0
+        end
+        if soundInfo[id].destroyOnFinish and not soundInfo[id].loop then
+            Destroy(id)
         end
     end
     if type == "onLoading" then
-        if globalOptionsCache[id] then
-            if globalOptionsCache[id].onLoading then
-                globalOptionsCache[id].onLoading(getInfo(id))
-            end
+        if globalOptionsCache[id] ~= nil and globalOptionsCache[id].onLoading ~= nil then
+            globalOptionsCache[id].onLoading(getInfo(id))
         end
     end
 end)
 
-RegisterNetEvent("xsound:stateSound", function(state, data)
+RegisterNetEvent("xsound:stateSound")
+AddEventHandler("xsound:stateSound", function(state, data)
     local soundId = data.soundId
 
     if state == "destroyOnFinish" then

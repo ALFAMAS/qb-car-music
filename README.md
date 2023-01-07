@@ -1,9 +1,12 @@
-# [No Longer Maintained] QBCore Car Music/Radio
+# [Setup Video will be uploaded soon] QBCore Car Music/Radio
+
 ### Previews : [Youtube](https://youtu.be/0efPWbqq8Go)
 
 ### My Discord Server - [DISCORD](https://discord.gg/jSDMuNjpuw)
 
-### Download Xsound - [Xsound](https://github.com/Xogy/xsound)
+### Credits to Xsound - [Xsound](https://github.com/Xogy/xsound)
+
+### Use Command - /music  | to use the script in game.
 
 ### SETUP 
 - Add these 1 lines your to `Server.cfg` or `Resources.cfg`.
@@ -11,3 +14,4 @@
 - Ensure xsound
 - Ensure qb-car-music
 - Done!
+
