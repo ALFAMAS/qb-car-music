@@ -9,8 +9,9 @@
 # Use Command | /music  | to use the script in game.
 
 ### SETUP 
-- Add these 1 lines your to `Server.cfg` or `Resources.cfg`.
 - Download xsound - [Github](https://github.com/Xogy/xsound)
+- Copy Files to Resources Folder 
+- Add these 2 lines your to `Server.cfg` or `Resources.cfg`.
 - Ensure xsound
 - Ensure qb-car-music
 - Done!
