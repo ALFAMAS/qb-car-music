@@ -16,3 +16,5 @@
 - Ensure qb-car-music
 - Done!
 
+# Reselling the script is Strictly Forbidden 
+# Legal Actions will be talen if found Reselling 
