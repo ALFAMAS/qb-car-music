@@ -17,4 +17,4 @@
 - Done!
 
 # Reselling the script is Strictly Forbidden 
-# Legal Actions will be talen if found Reselling 
+# Legal Actions will be taken if found Reselling 
