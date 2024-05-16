@@ -1,0 +1,241 @@
+#main {
+    margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: Roboto;
+}
+
+#image {
+    width: 800px;
+}
+
+#screen {
+    position: absolute;
+    z-index: 100;
+    width: 685px;
+    height: 365px;
+    margin-left: 74px;
+    margin-top: 39px;
+    opacity: 1;
+    background-color: black;
+}
+
+#shutdownbutton {
+    background: transparent;
+    border: none !important;
+    position: absolute;
+    z-index: 97;
+    width: 15px;
+    height: 15px;
+    opacity: 0.65;
+    margin-top: 87px;
+    margin-left: 50px;
+    border-radius: 50%;
+}
+
+#shutdownbutton:focus {
+    outline: none !important;
+}
+
+#shutdownbutton:hover {
+    background: white;
+}
+
+#volumeup {
+    position: absolute;
+    z-index: 97;
+    width: 15px;
+    height: 15px;
+    background: transparent;
+    border: none !important;
+    opacity: 0.65;
+    margin-top: 228px;
+    margin-left: 50px;
+    border-radius: 50%;
+}
+
+#volumeup:hover {
+    background: white;
+}
+
+#volumeup:focus {
+    outline: none !important;
+}
+
+#volumedown {
+    position: absolute;
+    z-index: 97;
+    width: 15px;
+    height: 15px;
+    background: transparent;
+    border: none !important;
+    opacity: 0.65;
+    margin-top: 295px;
+    margin-left: 50px;
+    border-radius: 50%;
+}
+
+#volumedown:focus {
+    outline: none !important;
+}
+
+#volumedown:hover {
+    background: white;
+}
+
+#title {
+    font-size: 40;
+    text-align: center;
+    font-weight: bold;
+    color: white;
+    margin-top: 10px;
+}
+
+
+#linkinput {
+    width: 530px;
+    height: 35px;
+    outline: none;
+    border: none;
+    border-radius: 15px;
+	padding-left : 15px;
+    padding-right: 15px;
+	-webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+	letter-spacing: 2px;
+}
+
+#inputok {
+    width: 100px;
+    height: 35px;
+    border-radius: 15px;
+    background-color: white;
+    outline: none;
+    border: none;
+    text-align: center;
+    margin-left: 5px;
+	letter-spacing: 2px;
+	font-family: Roboto;
+	font-size: 15;
+}
+
+#inputrec {
+    margin: 0 auto;
+    width: 650px;
+    height: 35px;
+    margin-top: 10px;
+}
+
+#inputok:hover {
+    background-color: rgb(222, 222, 222);
+}
+
+
+/* #bttrec {
+    position: relative;
+    margin: 0 auto;
+    width: 500px;
+    height: 75px;
+    margin-top: 60px;
+} */
+
+#bttrec {
+    position: relative;
+    margin: 0 auto;
+    width: 288px;
+    height: 90px;
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: repeat(3, 90px);
+    grid-gap: 20px 10px;
+}
+
+#inputtitle {}
+
+.fw {
+    width: 100%;
+    height: 100%;
+	opacity: 0.9;
+}
+
+.white {
+    filter: invert(1);
+}
+
+.fw:hover {
+	opacity: 0.5;
+}
+
+.bttn {
+    border-radius: 50%;
+    background-color: white;
+}
+
+#downrec {
+    position: relative;
+    margin: 0 auto;
+    margin-top: 10px;
+    width: 160px;
+    height: 60px;
+    display: grid;
+    grid-template-columns: repeat(2, 60px);
+    grid-gap: 20px 40px;
+}
+
+.clock {
+	font-size: 20;
+	text-align: left;
+    color: white;
+    font-family: Roboto;
+	letter-spacing: 2px;
+	margin-top: -38px;
+	margin-left: 30px;
+}
+
+#testrecv {
+	font-size: 15;
+    color: white;
+    margin-top: -35px;
+	margin-right: 30px;
+    text-align: right;
+	font-family: Roboto;
+	letter-spacing: 2px;
+}
+
+#testrecl {
+	font-size: 15;
+    color: white;
+    margin-top: 10px;
+	margin-right: 30px;
+    text-align: right;
+	font-family: Roboto;
+	letter-spacing: 1px;
+}
+
+hr.new2 {
+  margin-top: 2px;
+  border-bottom: 5px solid rgb(0, 102, 255);
+  opacity: 0.4;
+}
+
+#testrec {
+    color: white;
+    margin: 0 auto;
+    margin-top: 10px;
+    text-align: center;
+	max-width: 300px;
+	letter-spacing: 5px;
+	font-family: Roboto;
+}
+#testtime {
+    color: white;
+    margin: 0 auto;
+    margin-top: 10px;
+    text-align: center;
+	max-width: 300px;
+	letter-spacing: 1px;
+	font-family: Roboto;
+}
