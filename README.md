@@ -1,4 +1,4 @@
-# qb-car-music
+# qb-car-music 2.0.0
 
 A QBCore FiveM resource that brings a fully interactive in-car stereo and location-based radio zone system to your server. Players can stream any YouTube/URL audio directly from their vehicle or from configured world-space zones, with real-time sync across all clients.
 
