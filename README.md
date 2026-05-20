@@ -4,8 +4,8 @@ A QBCore FiveM resource that brings a fully interactive in-car stereo and locati
 
 [![Preview](https://img.shields.io/badge/Preview-YouTube-red?logo=youtube)](https://youtu.be/0efPWbqq8Go)
 [![Discord](https://img.shields.io/badge/Support-Discord-5865F2?logo=discord)](https://discord.gg/jSDMuNjpuw)
-[![Version](https://img.shields.io/badge/Version-1.3.0-blue)]()
-[![Framework](https://img.shields.io/badge/Framework-QBCore-orange)]()
+[![Version](https://img.shields.io/badge/Version-2.0.0-blue)]()
+[![Framework](https://img.shields.io/badge/Framework-QBCore%20%7C%20ESX%20%7C%20ox__core-orange)]()
 
 ---
 
@@ -17,7 +17,8 @@ A QBCore FiveM resource that brings a fully interactive in-car stereo and locati
 - [Configuration](#configuration)
 - [Usage](#usage)
 - [File Structure](#file-structure)
-- [TODO / Roadmap](#todo--roadmap)
+- [Database Setup](#database-setup)
+- [Changelog](#changelog)
 - [Credits](#credits)
 - [License](#license)
 
@@ -27,16 +28,25 @@ A QBCore FiveM resource that brings a fully interactive in-car stereo and locati
 
 - **In-vehicle stereo** — play any streamable URL (YouTube, direct audio, etc.) from inside any vehicle, identified by license plate
 - **World-space radio zones** — configure named locations where music plays positionally; only players in range hear it
-- **Job-restricted zones** — lock zone music control to specific QBCore jobs
+- **Job-restricted zones** — lock zone music control to a single job name or a whitelist of jobs (`job = {"police", "mechanic"}`)
 - **Real-time client sync** — all volume, loop, state, position, and URL changes are broadcast to every connected client instantly
 - **Proximity audio** — dynamic 3-D positional audio via xsound; volume scales with distance from the source vehicle/zone
 - **Passenger-only mode** — optionally restrict audio to only occupants of the playing vehicle (`Config.PlayToEveryone = false`)
 - **Loop toggle** — per-source looping, persisted on the server and synced to late-joining clients
 - **Seek controls** — skip forward/back 10 seconds; server-side timestamp tracking keeps everyone in sync
-- **Volume controls** — smooth ±5% steps; range scales proportionally with volume
-- **NUI stereo UI** — retro car-radio overlay with clock, marquee track name, time progress bar, and all playback controls
+- **Volume slider** — smooth drag slider in the NUI (replaces discrete ±5% buttons); also accessible via the on-radio knob overlays
+- **NUI stereo UI** — retro car-radio overlay with clock, animated scrolling track name, time progress bar, and all playback controls
 - **Item or command** — expose the radio UI via a QBCore inventory item or a chat command (configurable)
+- **Keyboard shortcut** — configurable key binding (default `F5`) as an alternative to the chat command
 - **Auto-resume on join** — new clients receive the current server state and begin playback at the correct timestamp
+- **Playlist / queue** — queue multiple URLs per zone or vehicle; auto-advances to the next track; Shift+Enter to enqueue without playing immediately
+- **Admin override command** — ace-permission holders can remotely change or stop any zone's music from chat or server console
+- **Map blips** — optional map blips at each zone's interact point so players can discover zones
+- **Multi-framework** — built-in bridge for QBCore, ESX, and ox_core; select with `Config.Framework`
+- **Persistent zone state** — optional oxmysql integration saves zone URLs and volumes across server restarts (`Config.EnableDatabase = true`)
+- **Rate limiting** — server-side per-source cooldowns on all net events to prevent spam and exploitation
+- **Auth checks** — server verifies the triggering player is inside the claimed vehicle before accepting vehicle music events
+- **URL validation** — server-side pattern check rejects malformed or empty URLs before processing
 
 ---
 
@@ -44,8 +54,9 @@ A QBCore FiveM resource that brings a fully interactive in-car stereo and locati
 
 | Dependency | Required | Notes |
 |---|---|---|
-| [qb-core](https://github.com/qbcore-framework/qb-core) | Yes | Core framework |
+| [qb-core](https://github.com/qbcore-framework/qb-core) | Yes (default) | Core framework; swap with ESX or ox_core via `Config.Framework` |
 | [xsound](https://github.com/Xogy/xsound) | Yes | 3-D positional audio engine |
+| [oxmysql](https://github.com/overextended/oxmysql) | No | Only required when `Config.EnableDatabase = true` |
 
 ---
 
@@ -62,6 +73,8 @@ ensure qb-car-music
 
 4. **Restart your server** or use `refresh` + `start qb-car-music` in the server console.
 
+> **Optional:** If you want persistent zone state, follow the [Database Setup](#database-setup) section.
+
 ---
 
 ## Configuration
@@ -72,10 +85,19 @@ All options live in `[car-music]/qb-car-music/config.lua`.
 
 | Option | Type | Default | Description |
 |---|---|---|---|
-| `Config.DistanceToVolume` | `float` | `30.0` | The distance (in game units) at which full volume is heard. Scales linearly — a volume of `0.5` produces a range of `15.0` |
-| `Config.PlayToEveryone` | `bool` | `true` | When `false`, in-vehicle audio is only heard by passengers of that specific vehicle |
-| `Config.ItemInVehicle` | `string\|false` | `false` | Set to an item name string (e.g. `"radio"`) to require players to use an inventory item to open the stereo. Set to `false` to use the chat command instead |
-| `Config.CommandVehicle` | `string` | `"music"` | The chat command that opens the stereo UI. Only active when `Config.ItemInVehicle` is `false` |
+| `Config.DistanceToVolume` | `float` | `30.0` | Distance (game units) at which full volume (1.0) is heard. Scales linearly — volume 0.5 → range 15.0 |
+| `Config.PlayToEveryone` | `bool` | `true` | When `false`, in-vehicle audio is only heard by occupants of that specific vehicle |
+| `Config.ItemInVehicle` | `string\|false` | `false` | Item name (e.g. `"radio"`) to require for opening the stereo. `false` = use command |
+| `Config.CommandVehicle` | `string` | `"music"` | Chat command to open the stereo UI (active when `ItemInVehicle` is `false`) |
+| `Config.KeyBinding` | `string\|false` | `"F5"` | Default key binding for the stereo command. `false` = no binding |
+| `Config.ZoneBlips` | `bool` | `true` | Render a map blip at each zone's `changemusicblip` coordinate |
+| `Config.AdminCommand` | `string` | `"musicadmin"` | Command name for the admin override |
+| `Config.AdminPermission` | `string` | `"admin"` | Ace permission node required to use `AdminCommand` |
+| `Config.MinVolumeThreshold` | `float` | `0.005` | Volume values below this are snapped to `0.0` (mute) |
+| `Config.VolumeEpsilon` | `float` | `0.001` | Floating-point tolerance for volume comparisons |
+| `Config.OffscreenPosition` | `vector3` | `vector3(350, 0, -150)` | Position where out-of-range sounds are relocated to silence them |
+| `Config.Framework` | `string` | `"qb-core"` | Framework bridge: `"qb-core"`, `"esx"`, or `"ox_core"` |
+| `Config.EnableDatabase` | `bool` | `false` | Persist zone state to oxmysql across restarts |
 
 ### Zone Configuration
 
@@ -84,21 +106,22 @@ Each entry in `Config.Zones` defines a static world-space radio zone:
 ```lua
 Config.Zones = {
     {
-        name            = "My Zone",          -- Unique identifier for this zone
-        coords          = vector3(x, y, z),   -- World position of the audio source
-        job             = "police",           -- QBCore job name allowed to change music; nil = anyone
-        range           = 30.0,              -- Max audible radius (game units)
-        volume          = 0.1,               -- Default volume (0.0 – 1.0)
-        deflink         = "https://...",     -- Default stream URL; nil = silent on start
-        isplaying       = false,             -- Start playing when the server starts
-        loop            = false,             -- Loop the track when it ends
-        deftime         = 0,                 -- Starting timestamp in seconds
-        changemusicblip = vector3(x, y, z),  -- Interact point where players can change the music
+        name            = "My Zone",           -- Unique identifier for this zone
+        coords          = vector3(x, y, z),    -- World position of the audio source
+        job             = "police",            -- String, table of strings, or nil (open to all)
+                                               -- e.g. job = {"police", "mechanic"}
+        range           = 30.0,               -- Max audible radius (game units)
+        volume          = 0.1,                -- Default volume (0.0 – 1.0)
+        deflink         = "https://...",      -- Default stream URL; nil = silent on start
+        isplaying       = false,              -- Start playing on server start
+        loop            = false,              -- Loop the track on end
+        deftime         = 0,                  -- Starting timestamp in seconds
+        changemusicblip = vector3(x, y, z),   -- Interact point where players open the UI
     },
 }
 ```
 
-> **Tip:** `changemusicblip` can be identical to `coords`. The player must stand within 3 game units of this point and press **E** to open the stereo UI for that zone.
+> **Tip:** `changemusicblip` can be identical to `coords`. The player must stand within 3 game units of this point and press **E** to open the zone's stereo UI.
 
 ---
 
@@ -108,6 +131,7 @@ Config.Zones = {
 
 1. Enter any vehicle.
 2. Open the stereo UI:
+   - **Key binding:** press `F5` (or your configured key)
    - **Command mode:** type `/music` in chat (or your configured command)
    - **Item mode:** use the configured inventory item
 3. Paste a stream URL into the input field and press **PLAY**.
@@ -121,15 +145,34 @@ Config.Zones = {
 - Press **E** to open the stereo UI for that zone.
 - Changes apply to all players within range immediately.
 
+### Playlist / Queue
+
+- With the stereo UI open, enter a URL and press **Shift+Enter** to add it to the queue instead of playing immediately.
+- The queue is displayed in the UI. Click **PLAY NEXT** to advance to the next queued track.
+- The queue is stored server-side and shared across all clients.
+
+### Admin Override
+
+```
+/musicadmin <zone-name> stop           -- stop a zone's music
+/musicadmin <zone-name> <url>          -- change a zone's music to a URL
+```
+
+Requires the `admin` ace permission (or whatever `Config.AdminPermission` is set to). Works from the server console (source 0) with no permission check.
+
 ### Controls Summary
 
 | Control | Action |
 |---|---|
+| **F5** (configurable) | Open / close the stereo UI |
 | **PLAY** button | Resume paused audio |
 | **PAUSE** button | Pause audio |
 | **LOOP** button | Toggle looping |
 | **⏮ / ⏭** buttons | Seek −10 / +10 seconds |
-| **VOL+ / VOL−** buttons | Adjust volume ±5% |
+| **Volume slider** | Drag to set volume (0 – 100%) |
+| **PLAY** (URL field) | Play the entered URL immediately |
+| **Shift+Enter** (URL field) | Add URL to the playlist queue |
+| **PLAY NEXT** | Advance to the next queued track |
 | **ESC** | Close the stereo UI |
 
 ---
@@ -140,15 +183,15 @@ Config.Zones = {
 [car-music]/
 └── qb-car-music/
     ├── config.lua          # All server-side and shared configuration
-    ├── fxmanifest.lua      # Resource manifest (version 1.3.0)
+    ├── fxmanifest.lua      # Resource manifest (version 2.0.0)
     ├── client/
-    │   └── main.lua        # NUI callbacks, xsound playback, zone proximity loop, music sync events
+    │   └── main.lua        # NUI callbacks, xsound playback, zone proximity, music sync events
     ├── server/
-    │   └── main.lua        # Authoritative state, event routing, timestamp tracking
+    │   └── main.lua        # Authoritative state, event routing, rate limiting, auth checks
     └── html/
-        ├── index.html      # NUI stereo overlay
-        ├── main.css        # Stereo UI styles
-        ├── script.js       # NUI event handlers, time display, track name resolution
+        ├── index.html      # NUI stereo overlay (no jQuery)
+        ├── main.css        # Stereo UI styles (responsive, CSS marquee animation)
+        ├── script.js       # NUI event handlers (fetch API), time display, queue, track name
         ├── radio.png       # Background image
         ├── play.svg
         ├── pause.svg
@@ -159,43 +202,51 @@ Config.Zones = {
 
 ---
 
-## TODO / Roadmap
+## Database Setup
 
-The following improvements are planned or recommended to optimize and harden the script:
+To persist zone URLs and volumes across server restarts, set `Config.EnableDatabase = true` in `config.lua`. This requires [oxmysql](https://github.com/overextended/oxmysql).
 
-### Performance
-- [ ] **Debounce the music-loop thread** — `StartMusicLoop` currently spins a dedicated coroutine per active sound; replace with a single shared scheduler thread to reduce CPU overhead
-- [ ] **Cache `PlayerPedId()` and `GetEntityCoords()` results** — the shared polling thread already does this for `coordsped` and `pploop`, but several event handlers still call these natives inline; consolidate to one place
-- [ ] **Increase sleep when far from any zone** — the zone-proximity loop drops to 500 ms at 10 units and 5 ms at 3 units; add a third tier (e.g. 5000 ms) for distances over 100 units to spare cycles on large maps
-- [ ] **Remove the `countTime` dual-tracking** — both client and server independently approximate playback time via `SetTimeout`; the client-side counter drifts and only exists to support UI polling. Rely solely on `xSound:getTimeStamp()` and remove the client `countTime` function
-- [ ] **Lazy-load the zone proximity thread** — delay starting the proximity loop until `myjob` is known and at least one matching zone exists
+The resource will auto-create the required table on first run. If you prefer to create it manually:
 
-### Code Quality
-- [ ] **Rename Portuguese variables** — `nomidaberto`, `nuiaberto`, `avancartodos`, `esperar`, `encontrad`, `carroe`, `crds`, `iss`, `zena`, `popo` should be given descriptive English names for maintainability
-- [ ] **Remove redundant `_source = source` in NUICallback** — `source` is always `nil` in NUI callbacks; this line is misleading
-- [ ] **Validate URLs server-side** — the `qb-car-music:AddVehicle` and `qb-car-music:ModifyURL` events accept any client-provided URL string with no sanitisation; add a basic pattern check on the server to prevent misuse
-- [ ] **Replace magic numbers** — values like `0.005`, `0.001`, `0.1+1`, `350.0`, `0.0`, `-150.0` are scattered across both files; extract them into named `Config` constants
-- [ ] **Consolidate duplicate loop logic** — the job-check block and the `job == nil` block in the zone proximity thread share identical distance/draw/input logic; extract to a helper function
+```sql
+CREATE TABLE IF NOT EXISTS `car_music_zones` (
+  `name`    VARCHAR(255) NOT NULL,
+  `deflink` TEXT,
+  `volume`  FLOAT        NOT NULL DEFAULT 0.1,
+  `loop`    TINYINT(1)   NOT NULL DEFAULT 0,
+  PRIMARY KEY (`name`)
+);
+```
 
-### Features
-- [ ] **Keyboard shortcut support** — add a configurable key binding (e.g. `F5`) as an alternative to the chat command/item
-- [ ] **Volume slider in NUI** — replace discrete +/− buttons with a drag slider for finer control
-- [ ] **Playlist / queue support** — allow players to queue multiple URLs; auto-advance on track end
-- [ ] **Persistent zone state (database)** — save zone links and volumes to oxmysql/mysql-async so they survive server restarts
-- [ ] **Admin override command** — allow configured ace-permission holders to change or stop any zone's music remotely
-- [ ] **Zone blips on the map** — optionally render a map blip at each `changemusicblip` coordinate so players can discover zones
-- [ ] **Per-zone access whitelist** — extend `job` to accept a table of job names, not just a single string
-- [ ] **ESX / ox_core compatibility layer** — abstract the framework bridge so the resource can run on non-QBCore servers with minimal config changes
+---
 
-### Security
-- [ ] **Rate-limit net events** — add per-source cooldowns on `qb-car-music:AddVehicle`, `qb-car-music:ChangeVolume`, `qb-car-music:ChangePosition`, and `qb-car-music:ChangeState` to prevent spam/exploitation
-- [ ] **Authorisation check on vehicle events** — verify that the triggering player is actually inside the target vehicle before accepting `AddVehicle` or `ModifyURL` events
+## Changelog
 
-### UI / UX
-- [ ] **Replace `<marquee>` tag** — `<marquee>` is deprecated HTML; implement CSS `animation: marquee` instead
-- [ ] **Migrate from jQuery `$.post` to `fetch`** — remove the jQuery CDN dependency to improve load time and avoid reliance on an external CDN in NUI
-- [ ] **Add visual feedback when no URL is entered** — the PLAY button currently silently no-ops if the input is empty; show a brief validation message
-- [ ] **Responsive scaling** — the fixed-pixel layout breaks on non-standard resolutions; convert to viewport-relative units
+### 2.0.0
+- **Performance:** Replaced per-sound coroutines with a single shared scheduler per zone (`ScheduleMusicLoop`)
+- **Performance:** Removed client-side `countTime` dual-tracking; playback time now relies solely on `xSound:getTimeStamp()`
+- **Performance:** Added third-tier sleep (5 000 ms) in zone proximity loop for players > 100 units from any zone
+- **Performance:** Zone proximity thread is now lazy-loaded — starts only after job data is available and at least one accessible zone exists
+- **Code quality:** All Portuguese variable names renamed to descriptive English equivalents
+- **Code quality:** Removed misleading `_source = source` line from NUI callback (always `nil` in NUI context)
+- **Code quality:** Extracted magic numbers (`0.005`, `0.001`, `350.0`, `0.0`, `-150.0`) into named `Config` constants
+- **Code quality:** Consolidated duplicate zone proximity logic into a single `CheckZoneProximity` helper
+- **Code quality:** `job` field on zones now accepts a table of job names for per-zone whitelists
+- **Feature:** Keyboard shortcut support via `RegisterKeyMapping` (default `F5`, configurable)
+- **Feature:** Volume drag-slider in NUI replaces discrete ±5% buttons
+- **Feature:** Playlist / queue system — queue multiple URLs per source, auto-advance, Shift+Enter to enqueue
+- **Feature:** Persistent zone state via optional oxmysql integration (`Config.EnableDatabase`)
+- **Feature:** Admin override command (`/musicadmin`) for ace-permitted players and the server console
+- **Feature:** Map blips at zone interact points (`Config.ZoneBlips`)
+- **Feature:** Per-zone `job` whitelist accepts a table of job names, not just a single string
+- **Feature:** Multi-framework bridge — `Config.Framework` switches between `"qb-core"`, `"esx"`, and `"ox_core"`
+- **Security:** Server-side rate limiting on all net events (500 ms cooldown per source per action)
+- **Security:** Server-side auth check verifies triggering player is inside the claimed vehicle before accepting vehicle music events
+- **Security:** Server-side URL validation on `AddVehicle`, `ModifyURL`, and queue events
+- **UI/UX:** Replaced deprecated `<marquee>` tag with CSS `animation: marquee-scroll`
+- **UI/UX:** Removed jQuery CDN dependency; all NUI communication now uses the native `fetch` API
+- **UI/UX:** Empty-URL validation message shown for 3 seconds when PLAY is clicked with no URL
+- **UI/UX:** Responsive scaling via CSS `--ui-scale` variable set by JavaScript on load and resize
 
 ---
 
