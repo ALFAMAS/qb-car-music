@@ -1,5 +1,8 @@
 config = {}
 
+-- will show debug in game ( can be turn on in prod, the debug will allow access to the command /showsounds )
+config.debug = false
+
 -- How much ofter the player position is updated ?
 config.RefreshTime = 300
 

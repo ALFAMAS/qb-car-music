@@ -1,329 +1,333 @@
-class SoundPlayer
-{
+let identifierCounterVariable = 0;
+
+class SoundPlayer {
     static yPlayer = null;
-    youtubeIsReady = false;
+    youtubePlayerReady = false;
 
-	constructor()
-	{
-		this.url = "test";
-		this.name = "";
-		this.dynamic = false;
-		this.distance = 10;
-		this.volume = 1.0;
-		this.pos = [0.0,0.0,0.0];
-		this.max_volume = -1.0; 
-		this.div_id = "myAudio_" + Math.floor(Math.random() * 9999999);
-		this.loop = false;
-		this.isYoutube = false;
-		this.load = false;
-		this.isMuted_ = false;
-		this.audioPlayer = null;
+    constructor() {
+        this.url = "test";
+        this.name = "";
+        this.dynamic = false;
+        this.distance = 10;
+        this.volume = 1.0;
+        this.pos = [ 0.0, 0.0, 0.0 ];
+        this.max_volume = -1.0;
+        this.div_id = "myAudio_" + identifierCounterVariable++;
+        this.loop = false;
+        this.isYoutube = false;
+        this.load = false;
+        this.isMuted_ = false;
+        this.audioPlayer = null;
 
-		//this.textToSpeech = false;
-        //this.speechSynthMessage = new SpeechSynthesisUtterance();
-		//this.textToRead = "hello you know";
-		//this.textToReadLang = "en-US";
-	}
-
-    /*
-    setTextToSpeechLang(lang){
-        this.textToReadLang = lang;
+        this.checkReady = null;
     }
 
-    setTextToSpeech(text){
-        this.textToRead = text;
+    setYoutubePlayerReady(result) {
+        this.youtubePlayerReady = result;
     }
 
-    IsTextToSpeech(result){
-        if(typeof result !== "undefined"){
-            this.textToSpeech = result
+    isYoutubePlayerReady() {
+        return this.youtubePlayerReady;
+    }
+
+    isAudioYoutubePlayer() {
+        return this.isYoutube;
+    }
+
+    getDistance() {
+        return this.distance;
+    }
+
+    getLocation() {
+        return this.pos;
+    }
+
+    getVolume() {
+        return this.volume;
+    }
+
+    getMaxVolume() {
+        return this.max_volume;
+    }
+
+    getUrlSound() {
+        return this.url;
+    }
+
+    isDynamic() {
+        return this.dynamic;
+    }
+
+    getDivId() {
+        return this.div_id;
+    }
+
+    isLoop() {
+        return this.loop;
+    }
+
+    getName() {
+        return this.name;
+    }
+
+    loaded() {
+        return this.load;
+    }
+
+    getAudioPlayer() {
+        return this.audioPlayer;
+    }
+
+    getYoutubePlayer() {
+        return this.yPlayer;
+    }
+
+    getAudioCurrentTime() {
+        if (this.isAudioYoutubePlayer()) {
+            return this.getYoutubePlayer().getDuration();
         }
-        return this.textToSpeech
+        return this.getAudioPlayer()._duration;
     }
-    */
 
-	isYoutubeReady(result){
-	    this.youtubeIsReady = result;
-	}
+    setLoaded(result) {
+        this.load = result;
+    }
 
-	getDistance() { return this.distance;}
-	getLocation() { return this.pos;     }
-	getVolume()   { return this.volume;  }
-	getMaxVolume(){ return this.max_volume;  }
-	getUrlSound() { return this.url;     }
-	isDynamic()   { return this.dynamic; }
-	getDivId()    { return this.div_id;  }
-	isLoop()      { return this.loop;    }
-	getName()     { return this.name;    }
-	loaded()      { return this.load;    }
+    setName(result) {
+        this.name = result;
+    }
 
-	getAudioPlayer()    { return this.audioPlayer; }
-	getYoutubePlayer()  { return this.yPlayer;     }
+    setDistance(result) {
+        this.distance = result;
+    }
 
-    setLoaded(result)    { this.load = result;   }
-	setName(result)      { this.name = result;   }
-	setDistance(result)  { this.distance = result;   }
-	setDynamic(result)   { this.dynamic = result;    }
-	setLocation(x_,y_,z_){ this.pos = [x_,y_,z_];    }
+    setDynamic(result) {
+        this.dynamic = result;
+    }
+
+    setLocation(x_, y_, z_) {
+        this.pos = [ x_, y_, z_ ];
+    }
 
 
-	setSoundUrl(result) {
-	    this.url = result.replace(/<[^>]*>?/gm, '');
-	}
+    setSoundUrl(result) {
+        this.url = sanitizeURL(result);
+    }
 
-	setLoop(result) {
-        if(!this.isYoutube)
-        {
-            if(this.audioPlayer != null){
+    setLoop(result) {
+        if (!this.isAudioYoutubePlayer()) {
+            if (this.audioPlayer != null) {
                 this.audioPlayer.loop(result);
             }
         }
-	    this.loop = result;
-	}
+        this.loop = result;
+    }
 
 
-	setMaxVolume(result) { this.max_volume = result; }
-	setVolume(result)    
-	{
-		this.volume = result;
-		if(this.max_volume == -1) this.max_volume = result; 
-		if(this.max_volume > (this.volume - 0.01)) this.volume = this.max_volume;
+    setMaxVolume(result) {
+        this.max_volume = result;
+    }
 
-        /*
-		if(this.IsTextToSpeech()){
-            this.speechSynthMessage.volume = result;
-		    return;
-		}
-		*/
+    setVolume(result) {
+        this.volume = result;
+        if (this.max_volume == -1) this.max_volume = result;
+        if (this.max_volume > (this.volume - 0.01)) this.volume = this.max_volume;
 
-		if(this.dynamic && (this.isMuted_ || isMutedAll)){
-			if(!this.isYoutube)
-			{
-				if(this.audioPlayer != null) {
-				    this.audioPlayer.volume(0);
-				}
-			}
-			else
-			{
-				if(this.yPlayer && this.youtubeIsReady){
-				    this.yPlayer.setVolume(0);
-				}
-			}			
-		}
-		else
-		{
-			if(!this.isYoutube)
-			{
-				if(this.audioPlayer != null){
-				    this.audioPlayer.volume(result);
-				}
-			}
-			else
-			{
-				if(this.yPlayer && this.youtubeIsReady){
-				    this.yPlayer.setVolume(result * 100);
-				}
-			}
-		}
-	}
-  
-	create()
-	{
-	    $.post('https://xsound/events', JSON.stringify(
-	    {
-            type: "onLoading",
-            id: this.getName(),
-	    }));
-	    var link = getYoutubeUrlId(this.getUrlSound());
-        if(link === "")
-        {
+        let volume = result;
+        if (this.isDynamic() && (this.isMuted() || IsAllMuted)) volume = 0;
+
+        if (this.isAudioYoutubePlayer() && this.yPlayer && this.isYoutubePlayerReady()) {
+            this.yPlayer.setVolume(volume * 100);
+        } else if (this.audioPlayer) {
+            this.audioPlayer.volume(volume);
+        }
+    }
+
+    create() {
+        const link = getYoutubeUrlId(this.getUrlSound());
+
+        if (link === "") {
             this.isYoutube = false;
 
             this.audioPlayer = new Howl({
-                src: [this.getUrlSound()],
+                src: [ this.getUrlSound() ],
                 loop: false,
                 html5: true,
                 autoplay: false,
                 volume: 0.00,
-                format: ['mp3'],
-                onend: function(event){
-                    ended(null);
+                format: [ 'mp3' ],
+                onload: () => {
+                    $.post('https://xsound/events', JSON.stringify({ type: "onLoading", id: this.getName() }));
                 },
-                onplay: function(){
-                    isReady("nothing", true);
+                onend: () => {
+                    ended(this.getName());
+                },
+                onplay: () => {
+                    isReady(this.getName());
                 },
             });
             $("#" + this.div_id).remove();
-            $("body").append("<div id = '"+ this.div_id +"' style='display:none'>"+this.getUrlSound() +"</div>")
-        }
-        else
-        {
+        } else {
+            $.post('https://xsound/events', JSON.stringify({ type: "onLoading", id: this.getName() }));
+
             this.isYoutube = true;
-            this.isYoutubeReady(false);
+            this.setYoutubePlayerReady(false);
             $("#" + this.div_id).remove();
-            $("body").append("<div id='"+ this.div_id +"'></div>");
-            this.yPlayer = new YT.Player(this.div_id, {
 
-                startSeconds:Number,
+            const url = "https://cfx-nui-xsound/html/index2.html?url=" + sanitizeURL(this.getUrlSound() + "&debug=" + debug);
 
-                videoId: link,
-                origin: window.location.href,
-                enablejsapi: 1,
-                width: "0",
-                height: "0",
-		        playerVars: {
-                    controls: 0,
-                },
-                events: {
-                    'onReady': function(event){
-                        event.target.unMute();
-                        event.target.setVolume(0);
-                        event.target.playVideo();
-                        isReady(event.target.getIframe().id);
-                    },
-                    'onStateChange': function(event){
-                        if (event.data == YT.PlayerState.ENDED) {
-                            isLooped(event.target.getIframe().id);
-                            ended(event.target.getIframe().id);
+            $("<iframe>", { id: this.div_id, src: url, }).css({ "width": "320px", "height": "180px" }).appendTo("body");
+
+            let attempts = 0;
+            const maxAttempts = 50;
+
+            let frame = document.getElementById(this.div_id);
+            this.checkReady = setInterval(() => {
+                attempts++;
+
+                if (frame && frame.contentWindow && frame.contentWindow.yPlayer) {
+                    this.releaseCheckReadyTimer();
+                    this.setYoutubePlayerReady(true);
+
+                    this.yPlayer = frame.contentWindow.yPlayer;
+                    this.yPlayer.addEventListener('onStateChange', (event) => {
+                        if (event.data == 0) {
+                            ended(this.getName());
                         }
-                    }
-                }
-            });
-        }
-	}
+                    });
 
-    destroyYoutubeApi()
-    {
+                    isReady(this.getName());
+                } else if (attempts >= maxAttempts) {
+                    this.releaseCheckReadyTimer();
+                    this.cleanIframe();
+                }
+            }, 100);
+        }
+    }
+
+    cleanIframe() {
+        let frame = document.getElementById(this.div_id);
+
+        if (frame) {
+            if (frame.contentWindow && typeof frame.contentWindow.clearMe === "function") {
+                frame.contentWindow.clearMe();
+            }
+
+            frame.src = "about:blank";
+
+            setTimeout(function () {
+                frame.remove();
+            }, 100);
+        }
+    }
+
+    releaseCheckReadyTimer() {
+        if (this.checkReady != null) {
+            clearInterval(this.checkReady);
+            this.checkReady = null;
+        }
+    }
+
+    destroyYoutubeApi() {
         if (this.yPlayer) {
-            if (typeof this.yPlayer.stopVideo === "function" && typeof this.yPlayer.destroy === "function") {
+            if (typeof this.yPlayer.stopVideo === "function") {
                 this.yPlayer.stopVideo();
-                this.yPlayer.destroy();
-                this.youtubeIsReady = false;
-                this.yPlayer = null;
+            }
+            this.youtubePlayerReady = false;
+            this.yPlayer = null;
+
+            this.cleanIframe();
+        }
+        this.releaseCheckReadyTimer();
+    }
+
+    delete() {
+        if (this.audioPlayer != null) {
+            this.audioPlayer.pause();
+            this.audioPlayer.stop();
+            this.audioPlayer.unload();
+        }
+
+        this.audioPlayer = null;
+        this.releaseCheckReadyTimer();
+    }
+
+    updateVolume(dd, maxd) {
+        const d_max = maxd;
+        const d_now = dd;
+        let vol = 0;
+        let distance = (d_now / d_max);
+        if (distance < 1) {
+            distance = distance * 100;
+            const far_away = 100 - distance;
+            vol = (this.max_volume / 100) * far_away;
+            this.setVolume(vol);
+            this.isMuted_ = false;
+        } else {
+            this.setVolume(0);
+            this.isMuted_ = true;
+        }
+    }
+
+    play() {
+        if (!this.isAudioYoutubePlayer()) {
+            if (this.audioPlayer != null) {
+                this.audioPlayer.play();
+            }
+        } else {
+            if (this.isYoutubePlayerReady() && this.yPlayer) {
+                this.yPlayer.playVideo();
             }
         }
     }
 
-	delete()
-	{
-	    if(this.audioPlayer != null){
-            this.audioPlayer.pause();
-            this.audioPlayer.stop();
-            this.audioPlayer.unload();
-	    }
-	    this.audioPlayer = null;
-	    $("#" + this.div_id).remove();
-	}
+    pause() {
+        if (!this.isAudioYoutubePlayer()) {
+            if (this.audioPlayer != null) this.audioPlayer.pause();
+        } else {
+            if (this.isYoutubePlayerReady() && this.yPlayer) this.yPlayer.pauseVideo();
+        }
+    }
 
-	updateVolume(dd,maxd) 
-	{
-        var d_max = maxd;
-        var d_now = dd;
+    resume() {
+        if (!this.isAudioYoutubePlayer()) {
+            if (this.audioPlayer != null) this.audioPlayer.play();
+        } else {
+            if (this.isYoutubePlayerReady() && this.yPlayer) this.yPlayer.playVideo();
+        }
+    }
 
-        var vol = 0;
-
-        var distance = (d_now / d_max);
-
-        if (distance < 1)
-        {
-            distance = distance * 100;
-            var far_away = 100 - distance;
-            vol = (this.max_volume / 100) * far_away;;
-			this.setVolume(vol);
-			this.isMuted_ = false;
-        }
-        else
-        {
-            this.setVolume(0);
-            this.isMuted_ = true;
-        }
-	}
-
-	play() 
-	{
-	    /*
-        if(this.IsTextToSpeech()){
-            this.speechSynthMessage.lang = this.textToReadLang;
-            this.speechSynthMessage.text = this.textToRead;
-            window.speechSynthesis.speak(this.speechSynthMessage);
-            return;
-        }
-        */
-
-        if(!this.isYoutube)
-        {
-            if(this.audioPlayer != null){
-                this.audioPlayer.play();
-            }
-        }
-        else
-        {
-            if(this.youtubeIsReady){
-                this.yPlayer.playVideo();
-            }
-        }
-	}
-	pause()
-	{
-        if(!this.isYoutube)
-        {
-            if(this.audioPlayer != null) this.audioPlayer.pause();
-        }
-        else
-        {
-            if(this.youtubeIsReady) this.yPlayer.pauseVideo();
-        }
-	}
-
-	resume()
-	{
-        if(!this.isYoutube)
-        {
-            if(this.audioPlayer != null) this.audioPlayer.play();
-        }
-        else
-        {
-            if(this.youtubeIsReady) this.yPlayer.playVideo();
-        }
-	}
-
-	isMuted()
-	{
+    isMuted() {
         return this.isMuted_;
-	}
+    }
 
-	mute()
-	{
+    mute() {
         this.isMuted_ = true;
         this.setVolume(0)
-	}
+    }
 
-	unmute()
-	{
+    unmute() {
         this.isMuted_ = false;
         this.setVolume(this.getVolume())
-	}
+    }
 
-	unmuteSilent()
-	{
+    unmuteSilent() {
         this.isMuted_ = false;
-	}
+    }
 
-	setTimeStamp(time)
-	{
-        if(!this.isYoutube)
-        {
+    setTimeStamp(time) {
+        if (!this.isAudioYoutubePlayer()) {
             this.audioPlayer.seek(time);
+        } else {
+            if (this.yPlayer && typeof this.yPlayer.seekTo === 'function') {
+                this.yPlayer.seekTo(time);
+            }
         }
-        else
-        {
-            this.yPlayer.seekTo(time);
-        }
-	}
+    }
 
-	isPlaying()
-	{
-        if(this.isYoutube) return this.youtubeIsReady && this.yPlayer.getPlayerState() == 1;
-        else return this.audioPlayer != null  && this.audioPlayer.playing();
-	}
+    isPlaying() {
+        if (this.isAudioYoutubePlayer()) {
+            return this.isYoutubePlayerReady() && this.yPlayer && this.yPlayer.getPlayerState && this.yPlayer.getPlayerState() == 1;
+        } else return this.audioPlayer != null && this.audioPlayer.playing();
+    }
 }

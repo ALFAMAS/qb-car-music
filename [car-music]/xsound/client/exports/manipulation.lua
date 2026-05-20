@@ -67,6 +67,7 @@ function Pause(name_)
         status = "pause",
         name = name_
     })
+
     soundInfo[name_].playing = false
     soundInfo[name_].paused = true
 

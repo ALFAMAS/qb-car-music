@@ -1,11 +1,16 @@
-RegisterNUICallback("init", function()
+RegisterNUICallback("init", function(data, cb)
     SendNUIMessage({
         status = "init",
         time = config.RefreshTime,
+        debug = config.debug,
     })
+
+    if cb then
+        cb('ok')
+    end
 end)
 
-RegisterNUICallback("data_status", function(data)
+RegisterNUICallback("data_status", function(data, cb)
     if soundInfo[data.id] ~= nil then
         if data.type == "finished" then
             if not soundInfo[data.id].loop then
@@ -14,17 +19,16 @@ RegisterNUICallback("data_status", function(data)
             TriggerEvent("xSound:songStopPlaying", data.id)
         end
         if data.type == "maxDuration" then
-            if not soundInfo[data.id].SkipTimeStamp then
-                soundInfo[data.id].timeStamp = 0
-            end
             soundInfo[data.id].maxDuration = data.time
-
-            soundInfo[data.id].SkipTimeStamp = nil
         end
+    end
+
+    if cb then
+        cb('ok')
     end
 end)
 
-RegisterNUICallback("events", function(data)
+RegisterNUICallback("events", function(data, cb)
     local id = data.id
     local type = data.type
     if type == "resetTimeStamp" then
@@ -34,6 +38,7 @@ RegisterNUICallback("events", function(data)
             soundInfo[id].playing = true
         end
     end
+
     if type == "onPlay" then
         if globalOptionsCache[id] then
             if globalOptionsCache[id].onPlayStartSilent then
@@ -69,6 +74,10 @@ RegisterNUICallback("events", function(data)
             end
         end
     end
+
+    if cb then
+        cb('ok')
+    end
 end)
 
 RegisterNetEvent("xsound:stateSound", function(state, data)
@@ -84,14 +93,6 @@ RegisterNetEvent("xsound:stateSound", function(state, data)
         if soundExists(soundId) then
             setTimeStamp(soundId, data.time)
         end
-    end
-
-    if state == "texttospeech" then
-        TextToSpeech(soundId, data.lang, data.url, data.volume, data.loop or false)
-    end
-
-    if state == "texttospeechpos" then
-        TextToSpeechPos(soundId, data.lang, data.url, data.volume, data.position, data.loop or false)
     end
 
     if state == "play" then

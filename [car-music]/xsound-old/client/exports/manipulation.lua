@@ -37,6 +37,14 @@ function Destroy(name_)
     globalOptionsCache[name_] = nil
 end
 
+function DestroySilent(name)
+    SendNUIMessage({
+        status = "delete",
+        name = name
+    })
+end
+
+
 exports('Destroy', Destroy)
 
 function Resume(name_)
@@ -59,6 +67,7 @@ function Pause(name_)
         status = "pause",
         name = name_
     })
+
     soundInfo[name_].playing = false
     soundInfo[name_].paused = true
 
@@ -148,6 +157,7 @@ function setSoundURL(name, url)
         soundInfo[name].url = url
         SendNUIMessage({
             status = "changeurl",
+            hasMaxTime = false,
             name = name,
             url = url,
         })

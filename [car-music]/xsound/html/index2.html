@@ -1,0 +1,145 @@
+<html>
+<head>
+    <title>xSound</title>
+    <script src="https://s.ytimg.com/yts/jsbin/www-widgetapi-vflJJaNgk/www-widgetapi.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <style>
+        #debug-overlay {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+
+            background: red;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div id="debug-overlay"></div>
+
+<div id="player"></div>
+
+<script>
+    let debugInterval = null;
+
+    function getQueryParams() {
+        let qs = window.location.search;
+        qs = qs.split("+").join(" ");
+
+        let params = {}, tokens, re = /[?&]?([^=]+)=([^&]*)/g;
+
+        while (tokens = re.exec(qs)) {
+            params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
+        }
+        return params;
+    }
+
+    function getYoutubeUrlId(url) {
+        let videoId = "";
+        if (url.indexOf("youtube") !== -1) {
+            const urlParts = url.split("?v=");
+            videoId = urlParts[1].substring(0, 11);
+        }
+
+        if (url.indexOf("youtu.be") !== -1) {
+            const urlParts = url.replace("//", "").split("/");
+            videoId = urlParts[1].substring(0, 11);
+        }
+        return videoId;
+    }
+
+    const result = getQueryParams();
+    if (result.url != null) {
+        let yt = new YT.Player("player", {
+            videoId: getYoutubeUrlId(result.url),
+            host: "https://www.youtube.com",
+            width: "100%",
+            height: "100%",
+            playerVars: {
+                autoplay: 1,
+                controls: 0,
+                disablekb: 1,
+                fs: 0,
+                rel: 0,
+                showinfo: 0,
+                ecver: 2,
+                iv_load_policy: 3,
+                origin: "https://www.youtube.com/"
+            },
+            events: {
+                "onReady": function (event) {
+                    window.yPlayer = event.target;
+                    if (typeof window.receivePlayer === "function") {
+                        window.receivePlayer(window.yPlayer);
+                    }
+
+                    event.target.unMute();
+                    event.target.setVolume(0.0);
+                    event.target.seekTo(0);
+                    event.target.playVideo();
+
+                    if (result.debug === "true") {
+                        startDebugLoop(window.yPlayer);
+                    }
+                },
+            }
+        });
+
+
+        function startDebugLoop(player) {
+            const StateNameList = {
+                [-1]: "Unstarted",
+                [0]: "Ended",
+                [1]: "Playing",
+                [2]: "Paused",
+                [3]: "Buffering",
+                [5]: "Cued",
+            }
+
+            const debugEl = document.getElementById("debug-overlay");
+            debugInterval = setInterval(() => {
+                const isMuted = player.isMuted();
+                const volume = player.getVolume();
+                const currentTime = player.getCurrentTime().toFixed(0);
+                const totalTime = player.getDuration().toFixed(0);
+
+                const stateCode = player.getPlayerState();
+                let stateName = "Unknown";
+                if (StateNameList[stateCode]) {
+                    stateName = StateNameList[stateCode];
+                }
+
+                debugEl.innerHTML = `STATE: ${ stateName.toUpperCase() } <br> TIME: ${ currentTime } / ${ totalTime }s <br> VOL: ${ volume }% ${ isMuted ? "(MUTED)" : "" }`;
+            }, 1000);
+        }
+
+        window.clearMe = function () {
+            if (yt && typeof yt.stopVideo === "function") yt.stopVideo();
+            if (yt && typeof yt.destroy === "function") yt.destroy();
+
+            let frame = document.getElementById("player");
+
+            if (debugInterval) {
+                clearInterval(debugInterval);
+                debugInterval = null;
+            }
+
+            if (frame) {
+                frame.src = "about:blank";
+
+                setTimeout(function () {
+                    if (frame) frame.remove();
+                }, 100);
+            }
+
+            yt = null;
+            window.yPlayer = null;
+        }
+    }
+</script>
+</body>
+</html>

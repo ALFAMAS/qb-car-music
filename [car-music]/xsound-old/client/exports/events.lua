@@ -27,3 +27,7 @@ function onPlayResume(name, delegate)
 end
 
 exports('onPlayResume', onPlayResume)
+
+function onPlayStartSilent(name, delegate)
+    globalOptionsCache[name].onPlayStartSilent = delegate
+end

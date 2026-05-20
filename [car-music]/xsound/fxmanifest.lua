@@ -3,8 +3,13 @@ games { 'gta5', 'rdr3' }
 
 rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aware my resources *will* become incompatible once RedM ships.'
 
+--[[ Resource Information ]]--
+name         'xsound'
+version      '1.1.0-experimental'
+
 client_scripts {
 	"config.lua",
+	"client/debug.lua",
 	"client/main.lua",
 	"client/events.lua",
 	"client/commands.lua",
@@ -30,10 +35,11 @@ server_scripts {
 	"addon/**/server/*.lua",
 }
 
-ui_page "html/index.html"
+ui_page "html/index2.html"
 
 files {
 	"html/index.html",
+	"html/index2.html",
 
 	"html/scripts/listener.js",
 	"html/scripts/SoundPlayer.js",
